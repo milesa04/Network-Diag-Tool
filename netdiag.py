@@ -28,6 +28,7 @@ from netdiag.reporters import (
 from netdiag.diagnostics import diagnose
 from netdiag.cli import create_parser
 from netdiag.history import History
+from netdiag.monitor import monitor
 
 
 if __name__ == "__main__":
@@ -64,6 +65,14 @@ if __name__ == "__main__":
 
             print()
 
+        history.close()
+        exit()
+
+
+
+    if args.monitor:
+        history = History()
+        monitor(check_internet, history, args.interval)
         history.close()
         exit()
 

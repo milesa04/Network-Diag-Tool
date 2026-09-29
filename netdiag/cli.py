@@ -32,4 +32,18 @@ def create_parser():
     help="Show recent diagnostic history"
     )
 
+
+    parser.add_argument(
+    "--monitor",
+    action="store_true",
+    help="Continuously monitor network health"
+    )
+
+    parser.add_argument(
+    "--interval",
+    type=int,
+    default=30,
+    help="Monitoring interval in seconds (default: 30)"
+    )
+
     return parser
