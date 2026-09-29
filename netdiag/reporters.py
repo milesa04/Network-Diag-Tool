@@ -62,7 +62,8 @@ def print_json(results, diagnoses):
                 "name": result.name,
                 "success": result.success,
                 "message": result.message,
-                "duration": round(result.duration, 3)
+                "duration": round(result.duration, 3),
+                "details": result.details
             }
             for result in results
         ],

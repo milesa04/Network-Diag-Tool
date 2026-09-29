@@ -241,3 +241,49 @@ def test_latency_only():
 
     assert len(diagnoses) == 1
     assert diagnoses[0].problem == "NO_PROBLEMS_DETECTED"
+
+
+
+def test_traceroute_destination_failure():
+    results = [
+        CheckResult(
+            name="Traceroute",
+            success=True,
+            message="Hop 1: 192.168.4.1 | Hop 2: No response",
+            duration=0.35,
+            details={
+                "hop_count": 2,
+                "unresponsive_hops": [2],
+                "destination_reached": False
+            }
+        )
+    ]
+
+    diagnoses = diagnose(results)
+
+    assert len(diagnoses) == 1
+    assert diagnoses[0].problem == "TRACEROUTE_DESTINATION_FAILURE"
+    assert diagnoses[0].severity == "DEGRADED"
+
+
+def test_traceroute_intermediate_hop_no_response():
+    results = [
+        CheckResult(
+            name="Traceroute",
+            success=True,
+            message="Hop 1: 192.168.4.1 | Hop 2: No response | Hop 3: 8.8.8.8",
+            duration=0.35,
+            details={
+                "hop_count": 3,
+                "unresponsive_hops": [2],
+                "destination_reached": True
+            }
+        )
+    ]
+
+    diagnoses = diagnose(results)
+
+    assert len(diagnoses) == 1
+    assert diagnoses[0].problem == "NO_PROBLEMS_DETECTED"
+
+

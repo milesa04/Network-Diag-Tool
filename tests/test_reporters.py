@@ -7,10 +7,15 @@ from netdiag.reporters import print_json
 def test_print_json(capsys):
     results = [
         CheckResult(
-            name="DNS Resolution",
+            name="Traceroute",
             success=True,
-            message="DNS working",
-            duration=0.01
+            message="Hop 1: 192.168.4.1 | Hop 2: 8.8.8.8",
+            duration=0.01,
+            details={
+                "hop_count": 2,
+                "unresponsive_hops": [],
+                "destination_reached": True
+            }
         )
     ]
 
@@ -28,6 +33,13 @@ def test_print_json(capsys):
     captured = capsys.readouterr()
     output = json.loads(captured.out)
 
-    assert output["checks"][0]["name"] == "DNS Resolution"
+    assert output["checks"][0]["name"] == "Traceroute"
     assert output["checks"][0]["success"] is True
+
+    assert output["checks"][0]["details"] == {
+        "hop_count": 2,
+        "unresponsive_hops": [],
+        "destination_reached": True
+    }
+
     assert output["diagnoses"][0]["problem"] == "NO_PROBLEMS_DETECTED"

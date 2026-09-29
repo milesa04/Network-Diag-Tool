@@ -39,6 +39,12 @@ def diagnose(results):
         None
     )
 
+    traceroute = next(
+    (result for result in results
+     if result.name == "Traceroute"),
+    None
+    )
+
     if gateway is not None and not gateway.success:
         diagnoses.append(
             Diagnosis(
@@ -124,6 +130,25 @@ def diagnose(results):
             )
         )
 
+    if (
+        traceroute is not None
+        and traceroute.success
+        and traceroute.details is not None
+        and not traceroute.details["destination_reached"]
+    ):
+        diagnoses.append(
+            Diagnosis(
+                problem="TRACEROUTE_DESTINATION_FAILURE",
+                severity="DEGRADED",
+                cause="Traceroute completed, but the destination could not be reached.",
+                recommendations=[
+                    "Check connectivity to the remote network",
+                    "Check firewall or routing configuration",
+                    "Run traceroute again to determine whether the issue persists"
+                ]
+            )
+        )
+
     if not diagnoses:
         diagnoses.append(
             Diagnosis(
@@ -137,3 +162,7 @@ def diagnose(results):
         )
 
     return diagnoses
+
+
+
+

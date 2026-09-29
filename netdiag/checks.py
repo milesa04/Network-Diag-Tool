@@ -302,7 +302,6 @@ def check_latency():
             duration=duration
         )
 
-
 def check_traceroute():
     start_time = time.perf_counter()
 
@@ -320,6 +319,7 @@ def check_traceroute():
 
         hops = []
         current_hop = None
+        unresponsive_hops = []
 
         for line in lines:
             line = line.strip()
@@ -343,6 +343,11 @@ def check_traceroute():
                     hops.append(
                         f"Hop {current_hop}: {', '.join(addresses)}"
                     )
+                else:
+                    hops.append(
+                        f"Hop {current_hop}: No response"
+                    )
+                    unresponsive_hops.append(int(current_hop))
 
             elif current_hop is not None:
                 addresses = []
@@ -360,14 +365,28 @@ def check_traceroute():
                 name="Traceroute",
                 success=False,
                 message="No traceroute hops were detected",
-                duration=duration
+                duration=duration,
+                details={
+                    "hop_count": 0,
+                    "unresponsive_hops": [],
+                    "destination_reached": False
+                }
             )
+
+        destination_reached = not (
+            hops[-1].endswith("No response")
+        )
 
         return CheckResult(
             name="Traceroute",
             success=True,
             message=" | ".join(hops),
-            duration=duration
+            duration=duration,
+            details={
+                "hop_count": len(hops),
+                "unresponsive_hops": unresponsive_hops,
+                "destination_reached": destination_reached
+            }
         )
 
     except subprocess.CalledProcessError:
@@ -377,5 +396,14 @@ def check_traceroute():
             name="Traceroute",
             success=False,
             message="Traceroute failed",
-            duration=duration
+            duration=duration,
+            details={
+                "hop_count": 0,
+                "unresponsive_hops": [],
+                "destination_reached": False
+            }
         )
+
+
+
+    

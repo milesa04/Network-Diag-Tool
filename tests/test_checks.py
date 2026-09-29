@@ -1,3 +1,5 @@
+from unittest import result
+
 import dns.resolver
 import ssl
 import urllib.error
@@ -237,4 +239,45 @@ def test_check_traceroute_failure(monkeypatch):
     assert result.name == "Traceroute"
     assert result.success is False
     assert result.message == "Traceroute failed"
+
+    assert result.details["hop_count"] == 0
+    assert result.details["unresponsive_hops"] == []
+    assert result.details["destination_reached"] is False
+
+
+def test_check_traceroute_no_response(monkeypatch):
+    class MockResult:
+        stdout = """
+traceroute to 8.8.8.8 (8.8.8.8), 8 hops max, 40 byte packets
+ 1  192.168.4.1 (192.168.4.1)  5.000 ms  5.100 ms  5.200 ms
+ 2  100.69.184.1 (100.69.184.1)  8.000 ms  8.100 ms  8.200 ms
+ 3  * * *
+ 4  100.64.253.43 (100.64.253.43)  10.000 ms  10.100 ms  10.200 ms
+ 5  100.64.253.34 (100.64.253.34)  12.000 ms  12.100 ms  12.200 ms
+ 6  170.250.254.37 (170.250.254.37)  14.000 ms  14.100 ms  14.200 ms
+ 7  66.103.15.142 (66.103.15.142)  15.000 ms  15.100 ms  15.200 ms
+ 8  192.178.109.89 (192.178.109.89)  16.000 ms  16.100 ms  16.200 ms
+"""
+
+    def mock_run(*args, **kwargs):
+        return MockResult()
+
+    monkeypatch.setattr(
+        "subprocess.run",
+        mock_run
+    )
+
+    result = check_traceroute()
+
+    assert result.name == "Traceroute"
+    assert result.success is True
+    assert "Hop 3: No response" in result.message
+    assert "Hop 1: 192.168.4.1" in result.message
+    assert "Hop 8: 192.178.109.89" in result.message
+
+    assert result.details["hop_count"] == 8
+    assert result.details["unresponsive_hops"] == [3]
+    assert result.details["destination_reached"] is True
+
+
 
