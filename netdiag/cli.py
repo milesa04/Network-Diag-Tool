@@ -26,4 +26,10 @@ def create_parser():
         help="Output results as JSON"
     )
 
+    parser.add_argument(
+    "--history",
+    action="store_true",
+    help="Show recent diagnostic history"
+    )
+
     return parser
