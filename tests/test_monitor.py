@@ -18,7 +18,7 @@ def test_monitor_runs_check(monkeypatch, capsys):
         )
 
     class FakeHistory:
-        def create_run(self, timestamp):
+        def create_run(self, timestamp, run_type):
             return 1
 
         def add_check(self, run_id, result):

@@ -45,6 +45,7 @@ if __name__ == "__main__":
         "traceroute": check_traceroute
     }
 
+
     if args.history:
         history = History()
 
@@ -53,16 +54,45 @@ if __name__ == "__main__":
         print("Recent Diagnostic Runs")
         print()
 
-        for run_id, timestamp in runs:
-            diagnoses = history.get_run_diagnoses(run_id)
+        for run_id, timestamp, run_type in runs:
+            print(f"  Type: {run_type.upper()}")
 
-            print(f"Run {run_id} — {timestamp}")
+            checks = history.get_run_checks(run_id)
+
+            if checks:
+                print("  Checks:")
+
+                for name, success, message, duration in checks:
+                    status = "✓" if success else "✗"
+
+                    print(f"    {status} {name} — {message} ({duration:.3f}s)")
+
+                print()
+
+            diagnoses = history.get_run_diagnoses(run_id)
 
             for problem, severity, cause in diagnoses:
                 print(f"  Status: {severity}")
                 print(f"  Problem: {problem}")
                 print(f"  Cause: {cause}")
+                print()
 
+        history.close()
+        exit()
+
+    if args.stats:
+        history = History()
+
+        statistics = history.get_check_statistics()
+
+        print("Historical Network Statistics")
+        print()
+
+        for name, data in statistics.items():
+            print(name)
+            print(f"  Runs: {data['runs']}")
+            print(f"  Success Rate: {data['success_rate'] * 100:.1f}%")
+            print(f"  Average Duration: {data['average_duration']:.3f}s")
             print()
 
         history.close()
@@ -70,9 +100,18 @@ if __name__ == "__main__":
 
 
 
+
     if args.monitor:
         history = History()
-        monitor(check_internet, history, args.interval)
+        monitor(
+            [
+                check_gateway,
+                check_internet,
+                check_dns
+            ],
+            history,
+            args.interval
+        )
         history.close()
         exit()
 
@@ -95,7 +134,8 @@ if __name__ == "__main__":
     history = History()
 
     run_id = history.create_run(
-        datetime.now().isoformat()
+        datetime.now().isoformat(),
+        "check" if args.check else "full"
     )
 
     for result in results:

@@ -1,3 +1,9 @@
+####################### Active Monitor #####################
+#
+# This module provides the monitor function to continuously run network checks at specified intervals and log the results.
+#
+
+
 import time
 from datetime import datetime
 
@@ -27,8 +33,14 @@ def monitor(check_functions, history, interval=30):
 
             print(f"[{timestamp}] {status} — {passed}/{total} checks passed")
 
+            if status == "DEGRADED":
+                for result in results:
+                    if not result.success:
+                        print(f"  ✗ {result.name} — {result.message}")
+
             run_id = history.create_run(
-                datetime.now().isoformat()
+                datetime.now().isoformat(),
+                "monitor"
             )
 
             for result in results:
@@ -43,3 +55,4 @@ def monitor(check_functions, history, interval=30):
 
     except KeyboardInterrupt:
         print("\nMonitoring stopped.")
+
